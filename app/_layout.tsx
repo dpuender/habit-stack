@@ -19,12 +19,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="welcome" />
-        <Stack.Screen name="home" />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
+        <Stack.Screen name="createStack" options={{ headerShown: false }} />
+        <Stack.Screen name="createHabit" />
         <Stack.Screen name="detailStack" />
         <Stack.Screen name="detailHabit" />
-        <Stack.Screen name="createStack" />
-        <Stack.Screen name="createHabit" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
