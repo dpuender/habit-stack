@@ -1,7 +1,12 @@
 import { ThemedView } from "@/components/themed-view";
 import { Header } from "@/components/ui/header";
-import { IconButtonBottom } from "@/components/ui/iconbutton";
+import { IconButton } from "@/components/ui/iconbutton";
 import { LabeledTextInput } from "@/components/ui/labeledTextInput";
+import { Colors } from "@/constants/theme";
+import { stacks } from "@/db/schema";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { StyleSheet } from "react-native";
 
@@ -9,8 +14,27 @@ export default function CreateStackScreen() {
   const [stackName, setStackName] = useState("");
   const [stackTrigger, setStackTrigger] = useState("");
 
+  const router = useRouter();
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+
+  function isStackDataEmpty() {
+    return stackName === "" || stackTrigger === "";
+  }
+
   function handleSave() {
-    // Logic to save the new stack
+    if (stackName === "" || stackTrigger === "") {
+      router.back();
+    } else {
+      drizzleDb
+        .insert(stacks)
+        .values({
+          name: stackName,
+          trigger: stackTrigger,
+        })
+        .run();
+      router.back();
+    }
   }
 
   return (
@@ -31,7 +55,15 @@ export default function CreateStackScreen() {
           onChangeText={setStackTrigger}
         />
 
-        <IconButtonBottom icon="save" onPress={handleSave} />
+        <IconButton
+          style={
+            isStackDataEmpty()
+              ? { backgroundColor: Colors.base.secondary }
+              : { backgroundColor: Colors.base.primary }
+          }
+          icon={isStackDataEmpty() ? "x" : "save"}
+          onPress={handleSave}
+        />
       </ThemedView>
     </ThemedView>
   );

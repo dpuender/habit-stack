@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/theme";
 import Feather from "@expo/vector-icons/Feather";
 import { PlatformPressable } from "@react-navigation/elements";
-import { StyleSheet, ViewProps } from "react-native";
+import { StyleProp, StyleSheet, ViewProps, ViewStyle } from "react-native";
 
 type IconName =
   | "settings"
@@ -16,12 +16,16 @@ type IconName =
 
 export type IconButtonProps = ViewProps & {
   icon: IconName;
+  style?: StyleProp<ViewStyle>;
   onPress: () => void;
 };
 
-export function IconButtonBottom(props: IconButtonProps) {
+export function IconButton(props: IconButtonProps) {
   return (
-    <PlatformPressable style={styles.button} onPress={props.onPress}>
+    <PlatformPressable
+      style={[styles.button, props.style]}
+      onPress={props.onPress}
+    >
       <Feather name={props.icon} size={24} color="white" />
     </PlatformPressable>
   );
@@ -36,8 +40,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 15,
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
   },
 });
