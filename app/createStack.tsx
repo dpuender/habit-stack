@@ -3,7 +3,7 @@ import { Header } from "@/components/ui/header";
 import { IconButton } from "@/components/ui/iconbutton";
 import { LabeledTextInput } from "@/components/ui/labeledTextInput";
 import { Colors } from "@/constants/theme";
-import { stacks } from "@/db/schema";
+import { addStack } from "@/services/stackService";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -26,14 +26,12 @@ export default function CreateStackScreen() {
     if (stackName === "" || stackTrigger === "") {
       router.back();
     } else {
-      drizzleDb
-        .insert(stacks)
-        .values({
-          name: stackName,
-          trigger: stackTrigger,
-        })
-        .run();
-      router.back();
+      addStack(drizzleDb, {
+        name: stackName,
+        trigger: stackTrigger,
+      }).then(() => {
+        router.back();
+      });
     }
   }
 

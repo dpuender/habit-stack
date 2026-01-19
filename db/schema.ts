@@ -27,3 +27,7 @@ export const habitStatus = sqliteTable("habit_status", {
 export type Stack = typeof stacks.$inferSelect;
 export type Habit = typeof habits.$inferSelect;
 export type HabitStatus = typeof habitStatus.$inferSelect;
+
+export type NewStack = typeof stacks.$inferInsert;
+export type NewHabit = typeof habits.$inferInsert;
+export type NewHabitStatus = typeof habitStatus.$inferInsert;

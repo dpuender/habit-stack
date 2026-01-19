@@ -49,7 +49,7 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="createHabit"
-              options={{ headerShown: false, presentation: "modal" }}
+              options={{ headerShown: false, presentation: "containedModal" }}
             />
             <Stack.Screen
               name="detailStack"

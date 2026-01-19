@@ -12,7 +12,8 @@ type IconName =
   | "edit"
   | "save"
   | "check"
-  | "chevron-right";
+  | "chevron-right"
+  | "circle";
 
 export type IconButtonProps = ViewProps & {
   icon: IconName;

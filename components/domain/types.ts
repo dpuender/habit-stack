@@ -1,18 +1,18 @@
-export interface Stack {
+export interface StackType {
   id: number;
   name: string;
-  trigger: string;
-  habits: Habit[];
+  trigger?: string | null;
+  habits: HabitType[];
 }
 
-export interface Habit {
+export interface HabitType {
   id: number;
-  name: string;
-  description: string;
-  status: Status[];
+  name: string | null;
+  description: string | null;
+  status: StatusType[];
 }
 
-export interface Status {
+export interface StatusType {
   completed: boolean;
   completedAt?: string;
 }

@@ -1,8 +1,10 @@
+import { StackType } from "@/components/domain/types";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Header } from "@/components/ui/header";
 import { IconButton } from "@/components/ui/iconbutton";
-import { Stack, stacks } from "@/db/schema";
+import { StackCard } from "@/components/ui/stack-card";
+import { fetchAllStacksWithHabits } from "@/services/stackService";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -13,22 +15,27 @@ export default function HomeScreen() {
   const router = useRouter();
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
-  const [currentStacks, setCurrentStacks] = useState<Stack[]>([]);
+  const [currentStacks, setCurrentStacks] = useState<StackType[]>([]);
 
   useFocusEffect(() => {
-    const fetchStacks = async () => {
-      const result = await drizzleDb.select().from(stacks).all();
-      setCurrentStacks(result);
-    };
-    fetchStacks();
+    fetchAllStacksWithHabits(drizzleDb).then((stacks) => {
+      setCurrentStacks(stacks);
+    });
   });
 
   function isStacksEmpty() {
     return currentStacks.length === 0;
   }
 
-  function handleOnPress() {
+  function handleNewStack() {
     router.navigate("/createStack");
+  }
+
+  function handleStackPress(stackId: number) {
+    router.push({
+      pathname: "/detailStack",
+      params: { stackId: stackId },
+    });
   }
 
   return (
@@ -44,13 +51,18 @@ export default function HomeScreen() {
         </ThemedView>
       ) : (
         <ThemedView style={styles.content_container}>
-          <ThemedText type="subtitle">
-            {currentStacks.length} Habit Stacks found.
-          </ThemedText>
+          {currentStacks.map((stack) => (
+            <StackCard
+              key={stack.id}
+              stack={stack}
+              style={styles.stack_card}
+              onPress={() => handleStackPress(stack.id)}
+            />
+          ))}
         </ThemedView>
       )}
 
-      <IconButton icon="plus" onPress={handleOnPress} />
+      <IconButton style={styles.button} icon="plus" onPress={handleNewStack} />
     </ThemedView>
   );
 }
@@ -67,5 +79,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+  },
+  stack_card: {
+    width: "115%",
+  },
+  button: {
+    position: "absolute",
+    bottom: 30,
   },
 });
