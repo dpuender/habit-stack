@@ -15,10 +15,17 @@ interface StackCardProps {
   stack: StackType;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
+  complete: boolean;
   onPress?: () => void;
 }
 
-export function StackCard({ children, stack, style, onPress }: StackCardProps) {
+export function StackCard({
+  children,
+  stack,
+  style,
+  complete,
+  onPress,
+}: StackCardProps) {
   return (
     <TouchableOpacity onPress={onPress}>
       <ThemedView style={[styles.card, style]}>
@@ -29,7 +36,7 @@ export function StackCard({ children, stack, style, onPress }: StackCardProps) {
           </View>
           <View style={{ paddingRight: 10 }}>
             <IconButton
-              icon="circle"
+              icon={complete ? "check" : "circle"}
               style={{ backgroundColor: "transparent", boxShadow: "none" }}
               onPress={() => {}}
             />
@@ -54,20 +61,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.base.primary,
     marginTop: 20,
     padding: 10,
-  },
-  habit_card: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#86b5fcff",
-    marginTop: 10,
-    padding: 10,
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   info_container: {
     display: "flex",

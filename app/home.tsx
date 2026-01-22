@@ -43,7 +43,14 @@ export default function HomeScreen() {
       <Header />
 
       {isStacksEmpty() ? (
-        <ThemedView style={styles.content_container}>
+        <ThemedView
+          style={[
+            styles.content_container,
+            isStacksEmpty()
+              ? { justifyContent: "center" }
+              : { justifyContent: "flex-start" },
+          ]}
+        >
           <ThemedText type="subtitle">No Habit Stacks yet...</ThemedText>
           <ThemedText type="subtitle">
             Add a Stack and start the process!
@@ -56,6 +63,11 @@ export default function HomeScreen() {
               key={stack.id}
               stack={stack}
               style={styles.stack_card}
+              complete={
+                stack.status.length === 0
+                  ? false
+                  : stack.status[stack.status.length - 1].completed
+              }
               onPress={() => handleStackPress(stack.id)}
             />
           ))}
@@ -77,7 +89,7 @@ const styles = StyleSheet.create({
   content_container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     padding: 20,
   },
   stack_card: {

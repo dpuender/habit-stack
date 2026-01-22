@@ -15,6 +15,15 @@ export const habits = sqliteTable("habits", {
   description: text("description"),
 });
 
+export const stackStatus = sqliteTable("stack_status", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  stackId: integer("stack_id")
+    .notNull()
+    .references(() => stacks.id),
+  completed: integer("status").notNull(),
+  completedAt: text("date").notNull(),
+});
+
 export const habitStatus = sqliteTable("habit_status", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   habitId: integer("habit_id")
@@ -27,6 +36,7 @@ export const habitStatus = sqliteTable("habit_status", {
 export type Stack = typeof stacks.$inferSelect;
 export type Habit = typeof habits.$inferSelect;
 export type HabitStatus = typeof habitStatus.$inferSelect;
+export type StackStatus = typeof stackStatus.$inferSelect;
 
 export type NewStack = typeof stacks.$inferInsert;
 export type NewHabit = typeof habits.$inferInsert;

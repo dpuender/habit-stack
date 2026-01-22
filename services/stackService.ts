@@ -1,6 +1,13 @@
-import { HabitType, StackType } from "@/components/domain/types";
+import { StackType } from "@/components/domain/types";
 import { eq } from "drizzle-orm";
-import { habits, habitStatus, NewStack, Stack, stacks } from "../db/schema";
+import {
+  habits,
+  habitStatus,
+  NewStack,
+  Stack,
+  stacks,
+  stackStatus,
+} from "../db/schema";
 
 export async function fetchAllStacksWithHabits(db: any): Promise<StackType[]> {
   const result = await db
@@ -11,32 +18,56 @@ export async function fetchAllStacksWithHabits(db: any): Promise<StackType[]> {
       habitId: habits.id,
       habitName: habits.name,
       habitDescription: habits.description,
+      stackStatusCompleted: stackStatus.completed,
+      stackStatusCompletedAt: stackStatus.completedAt,
     })
     .from(stacks)
     .leftJoin(habits, eq(stacks.id, habits.stackId))
+    .leftJoin(stackStatus, eq(stacks.id, stackStatus.stackId))
     .all();
 
   // Group habits by stack
   const groupedStacks = result.reduce((acc: StackType[], row) => {
-    const stack = acc.find((s) => s.id === row.stackId);
-    const habit: HabitType | null = row.habitId
-      ? {
+    let stack = acc.find((s) => s.id === row.stackId);
+
+    if (!stack) {
+      stack = {
+        id: row.stackId,
+        name: row.stackName,
+        trigger: row.stackTrigger,
+        habits: [],
+        status: [],
+      };
+      acc.push(stack);
+    }
+
+    if (row.habitId) {
+      const habitExists = stack.habits.find((h) => h.id === row.habitId);
+      if (!habitExists) {
+        stack.habits.push({
           id: row.habitId,
           name: row.habitName,
           description: row.habitDescription,
           status: [],
-        }
-      : null;
+        });
+      }
+    }
 
-    if (stack) {
-      if (habit) stack.habits.push(habit);
-    } else {
-      acc.push({
-        id: row.stackId,
-        name: row.stackName,
-        trigger: row.stackTrigger,
-        habits: habit ? [habit] : [],
-      });
+    if (row.stackStatusCompletedAt) {
+      const statusExists = stack.status.find(
+        (s) => s.completedAt === row.stackStatusCompletedAt,
+      );
+      if (!statusExists) {
+        stack.status.push({
+          completed: !!row.stackStatusCompleted,
+          completedAt: row.stackStatusCompletedAt,
+        });
+        stack.status.sort(
+          (a, b) =>
+            new Date(a.completedAt!).getTime() -
+            new Date(b.completedAt!).getTime(),
+        );
+      }
     }
 
     return acc;
@@ -76,6 +107,7 @@ export async function fetchStackByIdWithHabits(
     name: filteredRows[0].stackName,
     trigger: filteredRows[0].stackTrigger,
     habits: [],
+    status: [],
   };
 
   filteredRows.forEach((row) => {
@@ -101,7 +133,26 @@ export async function fetchStackByIdWithHabits(
     }
   });
 
+  stack.habits.forEach((habit) => {
+    habit.status.sort(
+      (a, b) =>
+        new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime(),
+    );
+  });
+
   return stack;
+}
+
+export async function setStackCompleted(
+  db: any,
+  stackId: number,
+  completed: boolean,
+): Promise<void> {
+  const now = new Date().toISOString();
+  await db
+    .insert(stackStatus)
+    .values({ stackId, completed, completedAt: now })
+    .run();
 }
 
 export async function addStack(db: any, stack: NewStack): Promise<void> {

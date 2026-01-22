@@ -1,3 +1,11 @@
+CREATE TABLE `stack_status` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`stack_id` integer NOT NULL,
+	`status` integer NOT NULL,
+	`date` text NOT NULL,
+	FOREIGN KEY (`stack_id`) REFERENCES `stacks`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `habit_status` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`habit_id` integer NOT NULL,

@@ -6,11 +6,14 @@ import { Header } from "@/components/ui/header";
 import { IconButton } from "@/components/ui/iconbutton";
 import { StackCard } from "@/components/ui/stack-card";
 import { addStatusToHabit } from "@/services/habitService";
-import { fetchStackByIdWithHabits } from "@/services/stackService";
+import {
+  fetchStackByIdWithHabits,
+  setStackCompleted,
+} from "@/services/stackService";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet } from "react-native";
 
 export default function StackDetailScreen() {
@@ -21,23 +24,34 @@ export default function StackDetailScreen() {
   const drizzleDb = drizzle(db);
   const [stack, setStack] = useState<StackType | null>(null);
 
-  useFocusEffect(() => {
-    const fetchData = async () => {
-      const fetchedStack = await fetchStackByIdWithHabits(drizzleDb, stackId);
-      if (!fetchedStack) {
-        router.back();
-      } else {
-        setStack(fetchedStack);
-      }
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const fetchedStack = await fetchStackByIdWithHabits(drizzleDb, stackId);
+        if (!fetchedStack) {
+          router.back();
+        } else {
+          setStack(fetchedStack);
+        }
+      };
 
-    fetchData();
-  });
+      fetchData();
+    }, [stackId]),
+  );
 
   function handleNewHabit() {
     router.push({
       pathname: "/createHabit",
       params: { stackId: stackId },
+    });
+  }
+
+  function isStackCompleted(): boolean {
+    if (!stack) return false;
+    if (stack.habits.length === 0) return false;
+    return stack.habits.every((habit) => {
+      const latestStatus = habit.status[habit.status.length - 1];
+      return latestStatus ? latestStatus.completed : false;
     });
   }
 
@@ -50,27 +64,31 @@ export default function StackDetailScreen() {
   }
 
   function handleCompleteHabit(habitId: number) {
+    if (!stack) return;
+
+    const isNowCompleted = !isHabitCompleted(habitId);
     const status: StatusType = {
       completedAt: new Date().toISOString(),
-      completed: !isHabitCompleted(habitId), // Toggle the completed status
+      completed: isNowCompleted,
     };
 
-    // Update the database
+    const updatedHabits = stack.habits.map((habit) => {
+      if (habit.id === habitId) {
+        const updatedStatus = [...habit.status, status];
+        return { ...habit, status: updatedStatus };
+      }
+      return habit;
+    });
+
+    const isStackNowComplete = updatedHabits.every((habit) => {
+      const latestStatus = habit.status[habit.status.length - 1];
+      return latestStatus ? latestStatus.completed : false;
+    });
+
     addStatusToHabit(drizzleDb, habitId, status).then(() => {
-      // Update the local state to reflect the change
+      setStackCompleted(drizzleDb, stackId, isStackNowComplete);
       setStack((prevStack) => {
         if (!prevStack) return prevStack;
-
-        // Create a new stack object with updated habits
-        const updatedHabits = prevStack.habits.map((habit) => {
-          if (habit.id === habitId) {
-            // Add the new status to the habit's status array
-            const updatedStatus = [...habit.status, status];
-            return { ...habit, status: updatedStatus };
-          }
-          return habit;
-        });
-
         return { ...prevStack, habits: updatedHabits };
       });
     });
@@ -90,7 +108,11 @@ export default function StackDetailScreen() {
   return (
     <ThemedView style={styles.container}>
       <Header />
-      <StackCard stack={stack} style={styles.card}>
+      <StackCard
+        stack={stack}
+        style={styles.card}
+        complete={isStackCompleted()}
+      >
         {stack.habits.map((habit) => (
           <HabitCard
             key={habit.id}

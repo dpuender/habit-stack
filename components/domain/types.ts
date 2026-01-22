@@ -3,6 +3,7 @@ export interface StackType {
   name: string;
   trigger?: string | null;
   habits: HabitType[];
+  status: StatusType[];
 }
 
 export interface HabitType {
