@@ -27,7 +27,7 @@ export async function fetchAllStacksWithHabits(db: any): Promise<StackType[]> {
     .all();
 
   // Group habits by stack
-  const groupedStacks = result.reduce((acc: StackType[], row) => {
+  const groupedStacks = result.reduce((acc: StackType[], row: any) => {
     let stack = acc.find((s) => s.id === row.stackId);
 
     if (!stack) {
@@ -97,7 +97,7 @@ export async function fetchStackByIdWithHabits(
     .leftJoin(habitStatus, eq(habits.id, habitStatus.habitId))
     .all();
 
-  const filteredRows = result.filter((row) => row.stackId === stackId);
+  const filteredRows = result.filter((row: any) => row.stackId === stackId);
   if (filteredRows.length === 0) {
     return null;
   }
@@ -110,7 +110,7 @@ export async function fetchStackByIdWithHabits(
     status: [],
   };
 
-  filteredRows.forEach((row) => {
+  filteredRows.forEach((row: any) => {
     if (row.habitId) {
       let habit = stack.habits.find((h) => h.id === row.habitId);
       const status = row.statusCompletedAt
@@ -136,7 +136,7 @@ export async function fetchStackByIdWithHabits(
   stack.habits.forEach((habit) => {
     habit.status.sort(
       (a, b) =>
-        new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime(),
+        new Date(a.completedAt!).getTime() - new Date(b.completedAt!).getTime(),
     );
   });
 

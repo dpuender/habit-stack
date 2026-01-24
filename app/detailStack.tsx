@@ -7,6 +7,7 @@ import { IconButton } from "@/components/ui/iconbutton";
 import { StackCard } from "@/components/ui/stack-card";
 import { addStatusToHabit } from "@/services/habitService";
 import {
+  deleteStack,
   fetchStackByIdWithHabits,
   setStackCompleted,
 } from "@/services/stackService";
@@ -44,6 +45,13 @@ export default function StackDetailScreen() {
       pathname: "/createHabit",
       params: { stackId: stackId },
     });
+  }
+
+  function handleDeleteStack(stackId: number) {
+    if (!stack) return;
+
+    deleteStack(drizzleDb, stackId);
+    router.dismissTo("/home");
   }
 
   function isStackCompleted(): boolean {
@@ -123,6 +131,11 @@ export default function StackDetailScreen() {
         ))}
       </StackCard>
       <IconButton style={styles.button} icon="plus" onPress={handleNewHabit} />
+      <IconButton
+        style={styles.delete_button}
+        icon="trash-2"
+        onPress={() => handleDeleteStack(stack.id)}
+      />
     </ThemedView>
   );
 }
@@ -147,5 +160,12 @@ const styles = StyleSheet.create({
   button: {
     position: "absolute",
     bottom: 30,
+  },
+
+  delete_button: {
+    position: "absolute",
+    backgroundColor: "red",
+    bottom: 30,
+    right: 30,
   },
 });

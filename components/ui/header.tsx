@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     right: 10,
     top: 50,
     position: "absolute",
-    backgroundColor: Colors.base.primaryShade1,
+    backgroundColor: Colors.base.primary,
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
